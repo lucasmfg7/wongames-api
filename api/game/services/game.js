@@ -34,11 +34,41 @@ async function create(name, entityName) {
   if (!item) {
     return await strapi.services[entityName].create({
       name,
-      slug: slugify(name, { lower: true }),
+      slug: slugify(name, { strict: true, lower: true }),
     });
   }
+}
 
-  return;
+async function createManyToManyData(products) {
+  const developers = new Set();
+  const publishers = new Set();
+  const categories = new Set();
+  const platforms = new Set();
+
+  products.forEach((product) => {
+    const { developer, publisher, genres, supportedOperatingSystems } = product;
+
+    genres?.forEach((item) => {
+      categories.add(item);
+    });
+
+    supportedOperatingSystems?.forEach((item) => {
+      platforms.add(item);
+    });
+
+    developers.add(developer);
+    publishers.add(publisher);
+  });
+
+  const createCall = (set, entityName) =>
+    Array.from(set).map((name) => create(name, entityName));
+
+  return Promise.all([
+    ...createCall(developers, "developer"),
+    ...createCall(publishers, "publisher"),
+    ...createCall(categories, "category"),
+    ...createCall(platforms, "platform"),
+  ]);
 }
 
 module.exports = {
@@ -48,7 +78,6 @@ module.exports = {
       data: { products },
     } = await axios.get(gogApiUrl);
 
-    await create(products[4].publisher, "publisher");
-    await create(products[4].developer, "developer");
+    await createManyToManyData(products);
   },
 };
