@@ -6,6 +6,22 @@
  */
 
 const axios = require("axios");
+const slugify = require("slugify");
+
+async function getGameInfo(slug) {
+  const jsdom = require("jsdom");
+  const { JSDOM } = jsdom;
+  const body = await axios.get(`https://www.gog.com/en/game/${slug}`);
+  const dom = new JSDOM(body.data);
+
+  const description = dom.window.document.querySelector(".description");
+
+  return {
+    rating: "BR0",
+    short_description: description.textContent.trim().slice(0, 160),
+    description: description.innerHTML,
+  };
+}
 
 module.exports = {
   populate: async (params) => {
@@ -14,6 +30,16 @@ module.exports = {
       data: { products },
     } = await axios.get(gogApiUrl);
 
-    console.log("products", products[0]);
+    await strapi.services.publisher.create({
+      name: products[2].publisher,
+      slug: slugify(products[2].publisher).toLowerCase(),
+    });
+
+    await strapi.services.developer.create({
+      name: products[2].developer,
+      slug: slugify(products[2].developer).toLowerCase(),
+    });
+
+    // console.log(products[2]);
   },
 };
