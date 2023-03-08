@@ -5,9 +5,14 @@
  * to customize this controller
  */
 
+// http://localhost:1337/games/populate
+
 module.exports = {
-  populate: (ctx) => {
-    console.log("Initiating");
-    ctx.send({ ok: true });
+  populate: async (ctx) => {
+    console.log("Starting to populate...");
+
+    await strapi.services.game.populate();
+
+    ctx.send("Finished populating!");
   },
 };
