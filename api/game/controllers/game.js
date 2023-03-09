@@ -5,7 +5,7 @@
  * to customize this controller
  */
 
-// http://localhost:1337/games/populate
+// curl -X POST http://localhost:1337/games/populate
 
 module.exports = {
   populate: async (ctx) => {
